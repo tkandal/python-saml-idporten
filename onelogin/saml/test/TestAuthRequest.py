@@ -3,7 +3,7 @@ import fudge
 from datetime import datetime
 from nose.tools import eq_ as eq
 
-from onelogin.saml import AuthnRequest
+from onelogin.saml import AuthRequest
 
 class TestAuthnRequest(object):
     def setUp(self):
@@ -42,7 +42,7 @@ class TestAuthnRequest(object):
             )
         fake_urlencode.returns('foo_urlencoded')
 
-        req = AuthnRequest.create(
+        req = AuthRequest.create(
             _clock=fake_clock,
             _uuid=fake_uuid_func,
             _zlib=fake_zlib,
