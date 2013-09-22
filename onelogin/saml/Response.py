@@ -57,6 +57,7 @@ class Response(object):
         self._document = _etree.fromstring(decoded_response)
         self._signature = signature
 
+
     def _parse_datetime(self, dt):
         return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
 
@@ -91,8 +92,18 @@ class Response(object):
         result = self._document.xpath('/samlp:Response/saml:Assertion/saml:AttributeStatement/saml:Attribute[@Name="%s"]/saml:AttributeValue'%attribute_name,namespaces=namespaces)
         return [n.text.strip() for n in result]
 
+    def get_decrypted_assertion_attribute_value(self,attribute_name):
+        """
+        Get the value of an AssertionAttribute, located in an Assertion/AttributeStatement/Attribute[@Name=attribute_name/AttributeValue tag
+        """
+        result = self._decrypted_document.xpath('/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:AttributeStatement/saml:Attribute[@Name="%s"]/saml:AttributeValue'%attribute_name,namespaces=namespaces)
+        return [n.text.strip() for n in result]
+
+
     def is_valid(
         self,
+        idp_cert_filename,
+        private_key_file,
         _clock=None,
         _verifier=None,
         ):
@@ -121,22 +132,29 @@ class Response(object):
         if not_before is None:
             #notbefore condition is not mandatory. If it is not specified, use yesterday as not_before condition
             not_before = (now-timedelta(1,0,0)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        if not_on_or_after is None:
-            raise ResponseConditionError('Did not find NotOnOrAfter condition')
+        #TODO: this is in the encrypted part in our case..
+        #if not_on_or_after is None:
+        #    raise ResponseConditionError('Did not find NotOnOrAfter condition')
 
         not_before = self._parse_datetime(not_before)
-        not_on_or_after = self._parse_datetime(not_on_or_after)
+        #not_on_or_after = self._parse_datetime(not_on_or_after)
 
         if now < not_before:
             raise ResponseValidationError(
                 'Current time is earlier than NotBefore condition'
                 )
-        if now >= not_on_or_after:
-            raise ResponseValidationError(
-                'Current time is on or after NotOnOrAfter condition'
-                )
+        #if now >= not_on_or_after:
+        #    raise ResponseValidationError(
+        #        'Current time is on or after NotOnOrAfter condition'
+        #        )
 
-        return _verifier(
+        is_valid, decrypted = _verifier(
             self._document,
             self._signature,
+            idp_cert_filename,
+            private_key_file,
             )
+
+        self.decrypted = decrypted
+        self._decrypted_document = etree.fromstring(self.decrypted)
+        return is_valid

@@ -30,6 +30,7 @@ def _parse_stderr(proc):
             return False
 
     # If neither success nor failure
+    print output
     if proc.returncode is not 0:
         msg = ('XMLSec returned error code %s. Please check your '
                + 'certficate.'
@@ -53,9 +54,32 @@ def _get_xmlsec_bin(_platform=None):
 
     return xmlsec_bin
 
+def decrypt_xml(xml_file, xmlsec_bin, private_key_file):
+    xml_filename = xml_file.name
+
+    cmds = [
+        xmlsec_bin,
+        '--decrypt',
+        '--privkey-pem',
+        private_key_file,
+        xml_filename
+        ]
+
+    print "COMMANDS", cmds
+    proc = subprocess.Popen(
+        cmds,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        )
+    out, err = proc.communicate()
+    return out
+
+
 def verify(
     document,
     signature,
+    idp_cert_filename,
+    private_key_file,
     _etree=None,
     _tempfile=None,
     _subprocess=None,
@@ -80,6 +104,7 @@ def verify(
     xmlsec_bin = _get_xmlsec_bin()
 
     verified = False
+    decrypted = False
     cert_filename = None
     xml_filename = None
     # Windows hack: Without the delete=False parameter in NamedTemporaryFile
@@ -87,53 +112,40 @@ def verify(
     try:
         with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
             doc_str = _etree.tostring(document)
+            xml_fp.write('<?xml version="1.0" encoding="utf-8"?>')
+            xml_fp.write("<!DOCTYPE test [<!ATTLIST samlp:Response ID ID #IMPLIED>]>")
             xml_fp.write(doc_str)
+            print "XML:"
+            print doc_str
             xml_fp.seek(0)
-            with _tempfile.NamedTemporaryFile(delete=False) as cert_fp:
-                if signature.startswith(
-                    '-----BEGIN CERTIFICATE-----'
-                    ):
-                    # If there's no matching 'END CERTIFICATE'
-                    # cryptpAppKeyLoad will fail
-                    cert_fp.write(signature)
-                else:
-                    cert_fp.write(
-                        '{begin}\n{signature}\n{end}'.format(
-                            begin='-----BEGIN CERTIFICATE-----',
-                            signature=signature,
-                            end='-----END CERTIFICATE-----',
-                            )
-                        )
-                cert_fp.seek(0)
+            xml_filename = xml_fp.name
 
-                cert_filename = cert_fp.name
-                xml_filename = xml_fp.name
+            # We cannot use xmlsec python bindings to verify here because
+            # that would require a call to libxml2.xmlAddID. The libxml2 python
+            # bindings do not yet provide this function.
+            # http://www.aleksey.com/xmlsec/faq.html Section 3.2
+            cmds = [
+                xmlsec_bin,
+                '--verify',
+                '--pubkey-cert-pem',
+                idp_cert_filename,
+                '--id-attr',
+                'ID',
+                xml_filename,
+                ]
 
-                # We cannot use xmlsec python bindings to verify here because
-                # that would require a call to libxml2.xmlAddID. The libxml2 python
-                # bindings do not yet provide this function.
-                # http://www.aleksey.com/xmlsec/faq.html Section 3.2
-                cmds = [
-                    xmlsec_bin,
-                    '--verify',
-                    '--pubkey-cert-pem',
-                    cert_filename,
-                    '--id-attr:ID',
-                    'urn:oasis:names:tc:SAML:2.0:assertion:Assertion',
-                    xml_filename,
-                    ]
-
-                proc = _subprocess.Popen(
-                    cmds,
-                    stderr=_subprocess.PIPE,
-                    stdout=_subprocess.PIPE,
-                    )
-                proc.wait()
-                verified = _parse_stderr(proc)
+            print "COMMANDS", cmds
+            proc = _subprocess.Popen(
+                cmds,
+                stderr=_subprocess.PIPE,
+                stdout=_subprocess.PIPE,
+                )
+            proc.wait()
+            verified = _parse_stderr(proc)
+            if verified:
+                decrypted = decrypt_xml(xml_fp, xmlsec_bin, private_key_file)
     finally:
-        if cert_filename is not None:
-            _os.remove(cert_filename)
         if xml_filename is not None:
             _os.remove(xml_filename)
 
-    return verified
+    return verified, decrypted
