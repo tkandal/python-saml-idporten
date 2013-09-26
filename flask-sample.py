@@ -39,7 +39,8 @@ user_info = {}
 @app.route('/')
 def home():
     """Render home page."""
-    url = AuthRequest.create(**settings)
+    auth_request = AuthRequest(**settings)
+    url = auth_request.get_signed_url(settings["private_key_file"])
     print "OUTGOING URL:", url
     return redirect(url)
 

@@ -4,7 +4,7 @@ from Response import (
     ResponseNameIDError,
     ResponseConditionError,
     )
-import AuthRequest
+from AuthRequest import AuthRequest
 import SignatureVerifier
 from LogoutRequest import LogoutRequest
 from LogoutResponse import LogoutResponse
