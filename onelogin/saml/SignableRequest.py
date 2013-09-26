@@ -35,7 +35,8 @@ def sign_request(urlencoded_request, private_key_file):
 
 class SignableRequest(object):
     def __init__(self):
-        pass
+        self.document = None
+        self.target_url = None
 
     def get_signed_url(self, private_key_file, _zlib=None, _base64=None, _urllib=None):
         if _zlib is None:
@@ -60,7 +61,7 @@ class SignableRequest(object):
         signature = sign_request(urlencoded_request, private_key_file)
 
         return '{url}?{query}&{Signature}'.format(
-            url=self.idp_sso_target_url,
+            url=self.target_url,
             query=urlencoded_request,
             Signature=signature
             )

@@ -75,7 +75,7 @@ def logout():
                                    session_index=user_info["session_index"],
                                    **settings)
     print "Logout xml", logout_request.raw_xml
-    url = logout_request.sign(settings["private_key_file"])
+    url = logout_request.get_signed_url(settings["private_key_file"])
     print "OUTGOING LOGOUT URL: ", url
     return redirect(url)
 

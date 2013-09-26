@@ -34,7 +34,7 @@ class AuthRequest(SignableRequest):
         assertion_consumer_service_url = kwargs.pop('assertion_consumer_service_url')
         issuer = kwargs.pop('issuer')
         name_identifier_format = kwargs.pop('name_identifier_format')
-        self.idp_sso_target_url = kwargs.pop('idp_sso_target_url')
+        self.target_url = kwargs.pop('idp_sso_target_url')
         sp_name_qualifier = kwargs.pop("sp_name_qualifier")
         destination = kwargs.pop("destination")
 
