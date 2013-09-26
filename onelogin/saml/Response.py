@@ -62,8 +62,8 @@ class Response(object):
         return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
 
     def _get_name_id(self):
-        result = self._document.xpath(
-            '/samlp:Response/saml:Assertion/saml:Subject/saml:NameID',
+        result = self._decrypted_document.xpath(
+            '/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:Subject/saml:NameID',
             namespaces=namespaces,
             )
         length = len(result)
@@ -84,6 +84,17 @@ class Response(object):
         fget=_get_name_id,
         doc="The value requested in the name_identifier_format, e.g., the user's email address",
         )
+
+    def get_session_index(self):
+        result = self._decrypted_document.xpath(
+            '/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:AuthnStatement/@SessionIndex',
+            namespaces=namespaces,
+            )
+
+        return result[0]
+
+
+
 
     def get_assertion_attribute_value(self,attribute_name):
         """
