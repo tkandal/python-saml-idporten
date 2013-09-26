@@ -437,6 +437,7 @@ class TestResponse(object):
     @fudge.with_fakes
     def test_is_valid_simple(self):
         encoded_response = base64.b64encode(test_response)
+        fake_signature = 'foo signature'
         res = Response(
             response=encoded_response,
             signature='foo signature',
@@ -445,16 +446,20 @@ class TestResponse(object):
         def fake_clock():
             return datetime(2004, 12, 05, 9, 18, 45, 462796)
 
+        private_key_file = "/tmp/tes.txt"
+        idp_cert_filename = "/tmp/junk.txt"
         fake_verifier = fudge.Fake(
             'verifier',
             callable=True,
             )
         fake_verifier.times_called(1)
-        fake_verifier.with_args(res._document, 'foo signature')
+        fake_verifier.with_args(res._document, fake_signature, idp_cert_filename, private_key_file)
+        fake_verifier.returns((True, "<xml></xml>"))
 
-        fake_verifier.returns(True)
 
         msg = res.is_valid(
+            idp_cert_filename,
+            private_key_file,
             _clock=fake_clock,
             _verifier=fake_verifier,
             )
