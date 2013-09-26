@@ -3,7 +3,7 @@ import ConfigParser
 
 from flask import Flask, render_template, request, redirect
 
-from onelogin.saml import AuthRequest, LogoutRequest, Response
+from onelogin.saml import AuthRequest, LogoutRequest, Response, LogoutResponse
 
 app = Flask(__name__)
 
@@ -83,17 +83,12 @@ def handle_logout_response():
     SAMLResponse = request.values['SAMLResponse']
     print "SAMLResponse", SAMLResponse
 
-    import base64
-    decoded_response = base64.b64decode(SAMLResponse)
-
-    import zlib
-    values = zlib.decompress(decoded_response, -15)
-    print "VALUES", values
-
-    from lxml import etree
-    document = etree.fromstring(values)
-
-    user_info = None
+    logout_response = LogoutResponse(SAMLResponse)
+    if logout_response.is_success():
+        print "User was successfully logged out."
+        user_info = None
+    else:
+        print "Logout failed."
 
     return render_template('home.html')
 

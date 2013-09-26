@@ -7,3 +7,4 @@ from Response import (
 import AuthRequest
 import SignatureVerifier
 from LogoutRequest import LogoutRequest
+from LogoutResponse import LogoutResponse
