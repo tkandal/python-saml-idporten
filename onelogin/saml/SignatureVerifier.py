@@ -54,9 +54,33 @@ def _get_xmlsec_bin(_platform=None):
 
     return xmlsec_bin
 
-def decrypt_xml(xml_file, xmlsec_bin, private_key_file):
-    xml_filename = xml_file.name
+def verify_xml(xml_filename, xmlsec_bin, idp_cert_filename):
+    # We cannot use xmlsec python bindings to verify here because
+    # that would require a call to libxml2.xmlAddID. The libxml2 python
+    # bindings do not yet provide this function.
+    # http://www.aleksey.com/xmlsec/faq.html Section 3.2
+    cmds = [
+        xmlsec_bin,
+        '--verify',
+        '--pubkey-cert-pem',
+        idp_cert_filename,
+        '--id-attr',
+        'ID',
+        xml_filename,
+        ]
 
+    print "COMMANDS", cmds
+    proc = subprocess.Popen(
+        cmds,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        )
+    proc.wait()
+    return _parse_stderr(proc)
+
+
+
+def decrypt_xml(xml_filename, xmlsec_bin, private_key_file):
     cmds = [
         xmlsec_bin,
         '--decrypt',
@@ -105,7 +129,6 @@ def verify(
 
     verified = False
     decrypted = False
-    cert_filename = None
     xml_filename = None
     # Windows hack: Without the delete=False parameter in NamedTemporaryFile
     # xmlsec.exe will get an IO Permission Denied error.
@@ -120,30 +143,9 @@ def verify(
             xml_fp.seek(0)
             xml_filename = xml_fp.name
 
-            # We cannot use xmlsec python bindings to verify here because
-            # that would require a call to libxml2.xmlAddID. The libxml2 python
-            # bindings do not yet provide this function.
-            # http://www.aleksey.com/xmlsec/faq.html Section 3.2
-            cmds = [
-                xmlsec_bin,
-                '--verify',
-                '--pubkey-cert-pem',
-                idp_cert_filename,
-                '--id-attr',
-                'ID',
-                xml_filename,
-                ]
-
-            print "COMMANDS", cmds
-            proc = _subprocess.Popen(
-                cmds,
-                stderr=_subprocess.PIPE,
-                stdout=_subprocess.PIPE,
-                )
-            proc.wait()
-            verified = _parse_stderr(proc)
+            verified = verify_xml(xml_filename, xmlsec_bin, idp_cert_filename)
             if verified:
-                decrypted = decrypt_xml(xml_fp, xmlsec_bin, private_key_file)
+                decrypted = decrypt_xml(xml_filename, xmlsec_bin, private_key_file)
     finally:
         if xml_filename is not None:
             _os.remove(xml_filename)
