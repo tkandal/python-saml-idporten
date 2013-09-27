@@ -98,6 +98,16 @@ def decrypt_xml(xml_filename, xmlsec_bin, private_key_file):
     out, err = proc.communicate()
     return out
 
+def write_xml_to_file(document, xml_fp):
+    doc_str = etree.tostring(document)
+    xml_fp.write('<?xml version="1.0" encoding="utf-8"?>')
+    xml_fp.write("<!DOCTYPE test [<!ATTLIST samlp:Response ID ID #IMPLIED>]>")
+    xml_fp.write(doc_str)
+    print "XML:"
+    print doc_str
+    xml_fp.seek(0)
+
+
 
 def verify(
     document,
@@ -134,13 +144,7 @@ def verify(
     # xmlsec.exe will get an IO Permission Denied error.
     try:
         with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
-            doc_str = _etree.tostring(document)
-            xml_fp.write('<?xml version="1.0" encoding="utf-8"?>')
-            xml_fp.write("<!DOCTYPE test [<!ATTLIST samlp:Response ID ID #IMPLIED>]>")
-            xml_fp.write(doc_str)
-            print "XML:"
-            print doc_str
-            xml_fp.seek(0)
+            write_xml_to_file(document, xml_fp)
             xml_filename = xml_fp.name
 
             verified = verify_xml(xml_filename, xmlsec_bin, idp_cert_filename)
