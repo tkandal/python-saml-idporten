@@ -139,19 +139,11 @@ def verify(
 
     verified = False
     decrypted = False
-    xml_filename = None
-    # Windows hack: Without the delete=False parameter in NamedTemporaryFile
-    # xmlsec.exe will get an IO Permission Denied error.
-    try:
-        with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
-            write_xml_to_file(document, xml_fp)
-            xml_filename = xml_fp.name
+    with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
+        write_xml_to_file(document, xml_fp)
 
-            verified = verify_xml(xml_filename, xmlsec_bin, idp_cert_filename)
-            if verified:
-                decrypted = decrypt_xml(xml_filename, xmlsec_bin, private_key_file)
-    finally:
-        if xml_filename is not None:
-            _os.remove(xml_filename)
+        verified = verify_xml(xml_fp.name, xmlsec_bin, idp_cert_filename)
+        if verified:
+            decrypted = decrypt_xml(xml_fp.name, xmlsec_bin, private_key_file)
 
     return verified, decrypted
