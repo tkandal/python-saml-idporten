@@ -3,7 +3,7 @@ import base64
 from lxml import etree
 from datetime import datetime, timedelta
 
-from onelogin.saml import SignatureVerifier
+from SignatureVerifier import SignatureVerifier
 
 namespaces=dict(
     samlp='urn:oasis:names:tc:SAML:2.0:protocol',
@@ -116,7 +116,7 @@ class Response(object):
         idp_cert_filename,
         private_key_file,
         _clock=None,
-        _verifier=None,
+        _verifier=None
         ):
         """
         Verify that the samlp:Response is valid.
@@ -125,7 +125,7 @@ class Response(object):
         if _clock is None:
             _clock = datetime.utcnow
         if _verifier is None:
-            _verifier = SignatureVerifier.verify
+            _verifier = SignatureVerifier(idp_cert_filename, private_key_file)
 
         conditions = self._document.xpath(
             '/samlp:Response/saml:Assertion/saml:Conditions',
@@ -159,12 +159,7 @@ class Response(object):
         #        'Current time is on or after NotOnOrAfter condition'
         #        )
 
-        is_valid, decrypted = _verifier(
-            self._document,
-            self._signature,
-            idp_cert_filename,
-            private_key_file,
-            )
+        is_valid, decrypted = _verifier.verify_and_decrypt(self._document, self._signature)
 
         self.decrypted = decrypted
         self._decrypted_document = etree.fromstring(self.decrypted)

@@ -5,6 +5,6 @@ from Response import (
     ResponseConditionError,
     )
 from AuthRequest import AuthRequest
-import SignatureVerifier
+from SignatureVerifier import SignatureVerifier, SignatureVerifierError
 from LogoutRequest import LogoutRequest
 from LogoutResponse import LogoutResponse

@@ -3,8 +3,9 @@ import fudge
 from lxml import etree
 from nose.tools import eq_ as eq
 from StringIO import StringIO
+import platform
 
-from onelogin.saml import SignatureVerifier
+from onelogin.saml import SignatureVerifier, SignatureVerifierError
 
 from onelogin.saml.test.util import assert_raises
 
@@ -113,27 +114,12 @@ class TestSignatureVerifier(object):
 
     @fudge.with_fakes
     def test_get_xmlsec_bin_default(self):
-        fake_platform = fudge.Fake('platform')
-        fake_platform.remember_order()
-        system_fn = fake_platform.expects('system')
-        system_fn.with_arg_count(0)
-        system_fn.returns('Linux')
+        xmlsec_bin = SignatureVerifier._get_xmlsec_bin()
+        expected_xmlsec = "xmlsec1"
+        if platform.system == "Windows":
+            expected_xmlsec = 'xmlsec.exe'
+        eq(expected_xmlsec, xmlsec_bin)
 
-        xmlsec_bin = SignatureVerifier._get_xmlsec_bin(_platform=fake_platform)
-
-        eq('xmlsec1', xmlsec_bin)
-
-    @fudge.with_fakes
-    def test_get_xmlsec_bin_windows(self):
-        fake_platform = fudge.Fake('platform')
-        fake_platform.remember_order()
-        system_fn = fake_platform.expects('system')
-        system_fn.with_arg_count(0)
-        system_fn.returns('Windows')
-
-        xmlsec_bin = SignatureVerifier._get_xmlsec_bin(_platform=fake_platform)
-
-        eq('xmlsec.exe', xmlsec_bin)
 
     @fudge.with_fakes
     def test_get_parse_stderr_fail(self):
@@ -180,7 +166,7 @@ Error: failed to verify file "/tmp/tmpYjEjq5"
         fake_proc.has_attr(returncode=1)
 
         msg = assert_raises(
-            SignatureVerifier.SignatureVerifierError,
+            SignatureVerifierError,
             SignatureVerifier._parse_stderr,
             fake_proc
             )
@@ -200,14 +186,14 @@ Error: failed to verify file "/tmp/tmpYjEjq5"
         fake_proc.has_attr(returncode=0)
 
         msg = assert_raises(
-            SignatureVerifier.SignatureVerifierError,
+            SignatureVerifierError,
             SignatureVerifier._parse_stderr,
             fake_proc
             )
 
         eq(str(msg),
            ('There was a problem validating the response: XMLSec exited with '
-            + 'code 0 but did not return OK when verifying the  SAML response.'
+            + 'code 0 but did not return OK when verifying the SAML response.'
             )
            )
 
