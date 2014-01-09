@@ -35,8 +35,6 @@ class AuthRequest(SignableRequest):
         issuer = kwargs.pop('issuer')
         name_identifier_format = kwargs.pop('name_identifier_format')
         self.target_url = kwargs.pop('idp_sso_target_url')
-        sp_name_qualifier = kwargs.pop("sp_name_qualifier")
-        destination = kwargs.pop("destination")
 
 
         now = _clock()
@@ -64,7 +62,7 @@ class AuthRequest(SignableRequest):
             IssueInstant=now_iso,
             ID=unique_id,
             AssertionConsumerServiceURL=assertion_consumer_service_url,
-            Destination=destination,
+            Destination=self.target_url,
             IsPassive="False"
             )
 
@@ -75,7 +73,7 @@ class AuthRequest(SignableRequest):
         name_id_policy = samlp_maker.NameIDPolicy(
             Format=name_identifier_format,
             AllowCreate='true',
-            SPNameQualifier=sp_name_qualifier
+            SPNameQualifier=issuer
             )
         authn_request.append(name_id_policy)
 

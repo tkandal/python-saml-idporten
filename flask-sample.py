@@ -23,11 +23,7 @@ settings = {
     'name_identifier_format'            : app.cfg.get('saml', 'name_identifier_format'),
     'idp_sso_target_url'                : app.cfg.get('saml', 'idp_sso_target_url'),
     'idp_cert_file'                     : app.cfg.get('saml', 'idp_cert_file'),
-    'idp_cert_fingerprint'              : app.cfg.get('saml', 'idp_cert_fingerprint'),
-    'sp_name_qualifier'                 : app.cfg.get('saml', 'sp_name_qualifier'),
-    'destination'                       : app.cfg.get('saml', 'destination'),
     'private_key_file'                  : app.cfg.get('saml', 'private_key_file'),
-    'destination'                       : app.cfg.get('saml', 'destination'),
     'logout_target_url'                 : app.cfg.get('saml', 'logout_target_url'),
     }
 
@@ -53,7 +49,7 @@ def logged_in():
 
     res = Response(
         SAMLResponse,
-        settings['idp_cert_fingerprint']
+        "TODO: remove signature parameter"
         )
     valid = res.is_valid(settings["idp_cert_file"], settings["private_key_file"])
 

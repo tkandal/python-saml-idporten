@@ -22,7 +22,7 @@ class TestAuthnRequest(object):
         def fake_clock():
             return datetime(2011, 7, 9, 19, 24, 52, 325405)
 
-        expected_xml = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="2011-07-09T19:24:52.875Z" Destination="destination" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0" IsPassive="False" AssertionConsumerServiceURL="http://foo.bar/consume" ID="hex_uuid"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">foo_issuer</saml2:Issuer><saml2p:NameIDPolicy AllowCreate="true" SPNameQualifier="sp_name_qualifier" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/><saml2p:RequestedAuthnContext Comparison="minimum"><saml2:AuthnContextClassRef xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml2:AuthnContextClassRef></saml2p:RequestedAuthnContext></saml2p:AuthnRequest>"""
+        expected_xml = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="2011-07-09T19:24:52.875Z" Destination="http://foo.idp.bar" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0" IsPassive="False" AssertionConsumerServiceURL="http://foo.bar/consume" ID="hex_uuid"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">foo_issuer</saml2:Issuer><saml2p:NameIDPolicy AllowCreate="true" SPNameQualifier="foo_issuer" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/><saml2p:RequestedAuthnContext Comparison="minimum"><saml2:AuthnContextClassRef xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml2:AuthnContextClassRef></saml2p:RequestedAuthnContext></saml2p:AuthnRequest>"""
 
         req = AuthRequest(
             _clock=fake_clock,
@@ -33,8 +33,6 @@ class TestAuthnRequest(object):
                                     + 'emailAddress'
                                     ),
             idp_sso_target_url='http://foo.idp.bar',
-            sp_name_qualifier="sp_name_qualifier",
-            destination="destination",
             private_key_file="/private/key_file.txt"
             )
 
@@ -50,7 +48,7 @@ class TestAuthnRequest(object):
     @fudge.with_fakes
     def test_sign_created_request(self):
 
-        expected_xml = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="2011-07-09T19:24:52.875Z" Destination="destination" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0" IsPassive="False" AssertionConsumerServiceURL="http://foo.bar/consume" ID="hex_uuid"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">foo_issuer</saml2:Issuer><saml2p:NameIDPolicy AllowCreate="true" SPNameQualifier="sp_name_qualifier" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/><saml2p:RequestedAuthnContext Comparison="minimum"><saml2:AuthnContextClassRef xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml2:AuthnContextClassRef></saml2p:RequestedAuthnContext></saml2p:AuthnRequest>"""
+        expected_xml = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" IssueInstant="2011-07-09T19:24:52.875Z" Destination="http://foo.idp.bar" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0" IsPassive="False" AssertionConsumerServiceURL="http://foo.bar/consume" ID="hex_uuid"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">foo_issuer</saml2:Issuer><saml2p:NameIDPolicy AllowCreate="true" SPNameQualifier="foo_issuer" Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/><saml2p:RequestedAuthnContext Comparison="minimum"><saml2:AuthnContextClassRef xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</saml2:AuthnContextClassRef></saml2p:RequestedAuthnContext></saml2p:AuthnRequest>"""
         fake_zlib = fudge.Fake('zlib')
         fake_zlib.remember_order()
         fake_compress = fake_zlib.expects('compress')
@@ -92,10 +90,9 @@ class TestAuthnRequest(object):
                                                   + 'emailAddress'
                                                   ),
                           idp_sso_target_url='http://foo.idp.bar',
-                          sp_name_qualifier="sp_name_qualifier",
-                          destination="destination",
                           private_key_file="/private/key_file.txt"
                           )
+
 
         with tempfile.NamedTemporaryFile(delete=False) as private_key_file:
             private_key = """
