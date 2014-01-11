@@ -1,10 +1,16 @@
-===========
-Python SAML
-===========
+=====================
+Python ID-Porten SAML
+=====================
 
-This Python SAML toolkit provides functionality for creating SAML AuthnRequests
-which can be sent to an identity provider and for verifying SAML Responses from
-an identity provider. OneLogin is an example of an identity provider.
+This Python ID-Porten SAML toolkit provides login and logout functionality for service providers
+using ID-porten as identity provider. ID-porten is a login solution for Norwegian government
+web services.
+
+This toolkit provides creating SAML AuthnRequests which can be sent to the identity provider
+and for verifying SAML Responses from the identity provider.
+
+This code is based on OneLogin's python saml toolkit (https://github.com/onelogin/python-saml).
+
 
 Non-Python Requirements
 =======================
@@ -39,6 +45,10 @@ Test Requirements
 
 Installing
 ==========
+To install using pip::
+
+    pip install -e git+https://github.com/Trondheim-kommune/python-idporten-saml.git@master
+
 To install in the default Python library location::
 
     python setup.py install
