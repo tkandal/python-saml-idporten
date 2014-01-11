@@ -3,7 +3,7 @@ import ConfigParser
 
 from flask import Flask, render_template, request, redirect
 
-from onelogin.saml import AuthRequest, LogoutRequest, Response, LogoutResponse
+from idporten.saml import AuthRequest, LogoutRequest, Response, LogoutResponse
 
 app = Flask(__name__)
 

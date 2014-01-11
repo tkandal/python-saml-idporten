@@ -9,7 +9,7 @@ from StringIO import StringIO
 from BaseHTTPServer import BaseHTTPRequestHandler
 from BaseHTTPServer import HTTPServer
 
-from onelogin.saml import AuthRequest, Response
+from idporten.saml import AuthRequest, Response
 
 __version__ = '0.1'
 

@@ -5,9 +5,9 @@ from nose.tools import eq_ as eq
 from StringIO import StringIO
 import platform
 
-from onelogin.saml import SignatureVerifier, SignatureVerifierError
+from idporten.saml import SignatureVerifier, SignatureVerifierError
 
-from onelogin.saml.test.util import assert_raises
+from idporten.saml.test.util import assert_raises
 
 class TestSignatureVerifier(object):
     def setUp(self):

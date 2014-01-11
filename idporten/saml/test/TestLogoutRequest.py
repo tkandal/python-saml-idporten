@@ -3,7 +3,7 @@ import fudge
 from datetime import datetime
 from nose.tools import eq_ as eq
 
-from onelogin.saml import LogoutRequest
+from idporten.saml import LogoutRequest
 
 class TestLogoutRequest(object):
     def setUp(self):

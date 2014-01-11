@@ -5,8 +5,8 @@ from lxml import etree
 from nose.tools import eq_ as eq
 from xml.dom import minidom
 
-from onelogin.saml.test.util import assert_raises
-from onelogin.saml import LogoutResponse
+from idporten.saml.test.util import assert_raises
+from idporten.saml import LogoutResponse
 
 
 test_raw_response = "nVI9b4MwEN3zK5B3wJiPwClEqpolUro0UYZuhzlaJGIjzkT9+SWoVZMMGWIv5/t47+6dV4ynroed/bSjeyfurWHyvO9TZxjmWCnGwYBFbhkMnojBadi/vO1ABRL6wTqrbScW200puEoTrCVJiapKqkyRIo15LgtdNbHGqmm0qpakhXekgVtrSjGhCG/LPNLWsEPjJpeMYl8WvsoO0RLSJcTJh/A2xK416OaqL+d6CEMZzBeK6YTdzRATqPmzD7YUUsWImDaUYpRomeZxFstcUprVEUrZiPVidRkY5l6GKwkeK4DMNFyaEuu27u3gyPhnGlRQt00bGOuf1Sq8Av6l6WHv0I38hNR3CK+2fm5jR+xGepzMMwPsR62J+cIc3lPf+/7ft59q/QM="

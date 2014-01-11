@@ -5,7 +5,7 @@ from nose.tools import eq_ as eq
 from lxml import etree
 from xml.dom import minidom
 import tempfile
-from onelogin.saml import AuthRequest
+from idporten.saml import AuthRequest
 
 class TestAuthnRequest(object):
     def setUp(self):
