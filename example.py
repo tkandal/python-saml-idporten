@@ -57,7 +57,10 @@ class SampleAppHTTPRequestHandler(BaseHTTPRequestHandler):
             self._bad_request()
             return
 
-        url = AuthnRequest.create(**self.settings)
+	settings = self.settings
+        auth_request = AuthRequest(**self.settings)
+        url = auth_request.get_signed_url(settings["private_key_file"])
+
         self.send_response(301)
         self.send_header("Location", url)
         self.end_headers()
@@ -106,6 +109,10 @@ def main(config_file):
     port = int(port)
 
     settings = dict()
+    settings['private_key_file'] = config.get(
+        'saml',
+        'private_key_file'
+        )
     settings['assertion_consumer_service_url'] = config.get(
         'saml',
         'assertion_consumer_service_url'
