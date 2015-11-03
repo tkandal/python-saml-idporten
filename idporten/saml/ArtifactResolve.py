@@ -14,7 +14,33 @@ from SignableRequest import SignableRequest
 
 class ArtifactResolve(object):
     def __init__(self, artifact, _clock=None, _uuid=None, **kwargs):
+        """This should produce an SAML2 ArtifactResolve like this:
 
+        <samlp:ArtifactResolve xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+            ID="%s"
+            IssueInstant="%s"
+            Version="2.0">
+        <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">%s</saml:Issuer>
+        <ns1:Signature xmlns:ns1="http://www.w3.org/2000/09/xmldsig#">
+            <ns1:SignedInfo>
+                <ns1:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                <ns1:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                <ns1:Reference URI="#%s">
+                    <ns1:Transforms>
+                        <ns1:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                        <ns1:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                    </ns1:Transforms>
+                    <ns1:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                    <ns1:DigestValue />
+                </ns1:Reference>
+            </ns1:SignedInfo>
+            <ns1:SignatureValue />
+            <ns1:KeyInfo >
+                <ns1:X509Data />
+            </ns1:KeyInfo>
+        </ns1:Signature>
+        <samlp:Artifact>%s</samlp:Artifact>
+        </samlp:ArtifactResolve>"""
         super(ArtifactResolve, self).__init__()
 
         if _clock is None:
@@ -44,79 +70,75 @@ class ArtifactResolve(object):
             IssueInstant=now_iso,
             ID=unique_id,
             )
+
         saml_issuer = saml_maker.Issuer()
         saml_issuer.text = issuer
         artifact_resolve.append(saml_issuer)
 
-        saml_artifact = saml_maker.Artifact()
+        saml_artifact = samlp_maker.Artifact()
         saml_artifact.text = artifact
         artifact_resolve.append(saml_artifact)
 
+        # Add XML-signature
         signature_maker = ElementMaker(
-             namespace='http://www.w3.org/2000/09/xmldsig#',
+            namespace='http://www.w3.org/2000/09/xmldsig#',
+            nsmap=dict(ns1='http://www.w3.org/2000/09/xmldsig#')
             )
 
         signature_elem = signature_maker.Signature()
 
-        signature_elem.SignedInfo()
+        artifact_resolve.append(signature_elem)
+ 
+        signed_info_elem = signature_maker.SignedInfo()
+       
+        signature_elem.append(signed_info_elem)
 
-        signature_elem.CanonicalizationMethod(
+        signed_info_elem.append(signature_maker.CanonicalizationMethod(
             Algorithm='http://www.w3.org/2001/10/xml-exc-c14n#'
-            )
+            ))
 
-        signature_elem.SignatureMethod(
+        signed_info_elem.append(signature_maker.SignatureMethod(
             Algorithm='http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+            ))
+
+        reference_elem = signature_maker.Reference(
+            URI='#' + unique_id
             )
 
-        reference_maker = signature_elem.Reference(
-            ID='#' + unique_id
-            )
+        signed_info_elem.append(reference_elem)
 
+        transforms_elem = signature_maker.Transforms()
+        reference_elem.append(transforms_elem)
 
-        transforms_elems = reference_maker.Transforms()
-        transforms_elems.Transform(
+        transforms_elem.append(signature_maker.Transform(
             Algorithm='http://www.w3.org/2000/09/xmldsig#enveloped-signature'
-            )
-        transform_maker = ElementMaker()
-        transform_canon = transform_maker.Transform(
+            ))
+        transforms_elem.append(signature_maker.Transform(
             Algorithm='http://www.w3.org/2001/10/xml-exc-c14n#'
-            )
-        transforms_elems.append(transform_canon)
+            ))
 
-        reference_maker.DigestMethod(
+        reference_elem.append(signature_maker.DigestMethod(
             Algorithm='http://www.w3.org/2000/09/xmldsig#sha1'
-            )
-        reference_maker.DigestValue()
+            ))
+        reference_elem.append(signature_maker.DigestValue())
 
-        signature_elem.SignatureValue()
-        signature_elem.KeyInfo()
+        signature_elem.append(signature_maker.SignatureValue())
+
+        key_info_elem = signature_maker.KeyInfo()
+        key_info_elem.append(signature_maker.X509Data())
+
+        signature_elem.append(key_info_elem)
 
         self.document = artifact_resolve
-        print etree.tostring(self.document, pretty_print=True, encoding='UTF-8')
 
 
-'''<?xml version='1.0' encoding='UTF-8'?>
-<ns0:ArtifactResolve xmlns:ns0="urn:oasis:names:tc:SAML:2.0:protocol"
-ID="%s"
-IssueInstant="%s"
-Version="2.0">
-<ns1:Issuer xmlns:ns1="urn:oasis:names:tc:SAML:2.0:assertion">%s</ns1:Issuer>
-<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
-  <SignedInfo>
-  <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-  <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
-  <Reference URI="#%s">
-    <Transforms>
-      <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
-      <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-    </Transforms>
-    <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-    <DigestValue />
-  </Reference>
-  </SignedInfo>
-  <SignatureValue />
-  <KeyInfo />
-  </Signature>
-<ns0:Artifact>%s</ns0:Artifact>
-</ns0:ArtifactResolve>'''
+    def dump(self, encoding='UTF-8', pretty_print=False):
+        """Dump the SAML2 ArtifactResolve-document to a string."""
+        return etree.tostring(self.document, encoding=encoding,
+            pretty_print=pretty_print)
+
+
+    def signed_artifact_resolve(self, secret_key_file):
+        """Sign the SAML2 ArtifactResolve-document."""
+        raise Exception('Not implemented')
 
