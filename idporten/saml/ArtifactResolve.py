@@ -9,10 +9,10 @@ from datetime import datetime
 from lxml import etree
 from lxml.builder import ElementMaker
 
-from SignableRequest import SignableRequest
+from SignableMessage import SignableMessage
 
 
-class ArtifactResolve(object):
+class ArtifactResolve(SignableMessage):
     def __init__(self, artifact, _clock=None, _uuid=None, **kwargs):
         """This should produce an SAML2 ArtifactResolve like this:
 
@@ -42,6 +42,7 @@ class ArtifactResolve(object):
         <samlp:Artifact>%s</samlp:Artifact>
         </samlp:ArtifactResolve>"""
         super(ArtifactResolve, self).__init__()
+        self.node_ns = 'urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve'
 
         if _clock is None:
             _clock = datetime.utcnow
@@ -71,13 +72,6 @@ class ArtifactResolve(object):
             ID=unique_id,
             )
 
-        saml_issuer = saml_maker.Issuer()
-        saml_issuer.text = issuer
-        artifact_resolve.append(saml_issuer)
-
-        saml_artifact = samlp_maker.Artifact()
-        saml_artifact.text = artifact
-        artifact_resolve.append(saml_artifact)
 
         # Add XML-signature
         signature_maker = ElementMaker(
@@ -129,16 +123,15 @@ class ArtifactResolve(object):
 
         signature_elem.append(key_info_elem)
 
+        # Add Issuer and artifact under signature.
+        saml_issuer = saml_maker.Issuer()
+        saml_issuer.text = issuer
+        artifact_resolve.append(saml_issuer)
+
+        saml_artifact = samlp_maker.Artifact()
+        saml_artifact.text = artifact
+        artifact_resolve.append(saml_artifact)
+
         self.document = artifact_resolve
 
-
-    def dump(self, encoding='UTF-8', pretty_print=False):
-        """Dump the SAML2 ArtifactResolve-document to a string."""
-        return etree.tostring(self.document, encoding=encoding,
-            pretty_print=pretty_print)
-
-
-    def signed_artifact_resolve(self, secret_key_file):
-        """Sign the SAML2 ArtifactResolve-document."""
-        raise Exception('Not implemented')
 
