@@ -57,7 +57,7 @@ class SignableDocument(object):
         return xmlsec_bin
 
 
-    def tostring(self, xml_declaration=False, encoding='UTF-8',
+    def tostring(self, xml_declaration=True, encoding='UTF-8',
         pretty_print=False):
         """Return the XML-document as a string."""
         return etree.tostring(self.document, xml_declaration=xml_declaration,
@@ -66,7 +66,7 @@ class SignableDocument(object):
 
     def write_xml_to_file(self, xml_fp):
         """Write the XML-document to a given file."""
-        doc_str = self.tostring(xml_declaration=True, pretty_print=True)
+        doc_str = self.tostring(pretty_print=True)
         xml_fp.write(doc_str)
         xml_fp.flush()
         print "XML:"

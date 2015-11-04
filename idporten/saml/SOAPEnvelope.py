@@ -11,7 +11,8 @@ from lxml.builder import ElementMaker
 
 
 
-XML_DECL = re.compile('^<\?xml\ +version=..+$', re.IGNORECASE|re.MULTILINE)
+XML_DECL = re.compile('^<\?xml\ +version=.+encoding=.+\?>$',
+    re.IGNORECASE|re.MULTILINE)
 
 
 class SOAPEnvelopeError(Exception):
@@ -58,7 +59,8 @@ class SOAPEnvelope(object):
             encoding='UTF-8', pretty_print=True)
 
 
-    def tostring(self, body):
+    def tostring(self, body, xml_declaration=True, encoding='UTF-8',
+            pretty_print=False):
         """Insert body as the SOAP-body and return this envelope as
         a string.
 
@@ -69,8 +71,9 @@ class SOAPEnvelope(object):
             if XML_DECL.match(body):
                 splitted_body = body.split('\n')
                 body = '\n'.join(splitted_body[1:])
-            return (etree.tostring(self.envelope, xml_declaration=True,
-                pretty_print=True, encoding='UTF-8') % body)
+            return (etree.tostring(self.envelope,
+                xml_declaration=xml_declaration, pretty_print=pretty_print,
+                encoding=encoding) % body)
         else:
             raise SOAPEnvelopeError('Illegal parameter.  Must be a '
                 'string or unicode')
