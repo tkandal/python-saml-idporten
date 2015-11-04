@@ -1,18 +1,20 @@
-#import zlib
-#import base64
+"""
+Creates an SAML2 ArtifactResolve message.
+"""
+#
+# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
+#
 import uuid
-#import urllib
-#import tempfile
-#import subprocess as subp
 
 from datetime import datetime
-from lxml import etree
 from lxml.builder import ElementMaker
 
-from SignableMessage import SignableMessage
+from SignableDocument import SignableDocument
 
 
-class ArtifactResolve(SignableMessage):
+class ArtifactResolve(SignableDocument):
+    """Creates an SAML2 ArtifactResolve message."""
+
     def __init__(self, artifact, _clock=None, _uuid=None, **kwargs):
         """This should produce an SAML2 ArtifactResolve like this:
 
@@ -49,11 +51,9 @@ class ArtifactResolve(SignableMessage):
         if _uuid is None:
             _uuid = uuid.uuid4
 
-        issuer = kwargs.pop('issuer')
-
         now = _clock()
         now = now.replace(microsecond=0)
-        now_iso = now.isoformat() + ".875Z"   #TODO: add better format here
+        now_iso = now.isoformat() + ".875Z"
 
         unique_id = _uuid()
         unique_id = unique_id.hex
@@ -72,8 +72,23 @@ class ArtifactResolve(SignableMessage):
             ID=unique_id,
             )
 
+        artifact_resolve.append(self._create_signature(unique_id))
 
-        # Add XML-signature
+        # Add Issuer and artifact under signature.
+        saml_issuer = saml_maker.Issuer()
+        saml_issuer.text = kwargs.get('issuer', '')
+        artifact_resolve.append(saml_issuer)
+
+        saml_artifact = samlp_maker.Artifact()
+        saml_artifact.text = artifact
+        artifact_resolve.append(saml_artifact)
+
+        self.document = artifact_resolve
+
+
+    @staticmethod
+    def _create_signature(unique_id):
+        """Craates all XML-elements needed for an XML-signature."""
         signature_maker = ElementMaker(
             namespace='http://www.w3.org/2000/09/xmldsig#',
             nsmap=dict(ns1='http://www.w3.org/2000/09/xmldsig#')
@@ -81,7 +96,6 @@ class ArtifactResolve(SignableMessage):
 
         signature_elem = signature_maker.Signature()
 
-        artifact_resolve.append(signature_elem)
  
         signed_info_elem = signature_maker.SignedInfo()
        
@@ -122,16 +136,5 @@ class ArtifactResolve(SignableMessage):
         key_info_elem.append(signature_maker.X509Data())
 
         signature_elem.append(key_info_elem)
-
-        # Add Issuer and artifact under signature.
-        saml_issuer = saml_maker.Issuer()
-        saml_issuer.text = issuer
-        artifact_resolve.append(saml_issuer)
-
-        saml_artifact = samlp_maker.Artifact()
-        saml_artifact.text = artifact
-        artifact_resolve.append(saml_artifact)
-
-        self.document = artifact_resolve
-
+        return signature_elem
 
