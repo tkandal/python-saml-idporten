@@ -30,11 +30,12 @@ class SignableDocumentError(Exception):
 class SignableDocument(object):
     """A base class for signing XML-documents"""
 
-    def __init__(self):
-        """ No parameters to __init__."""
+    def __init__(self, _debug=False):
+        """Turn on _debug to see what is going on in the background."""
         super(SignableDocument, self).__init__()
         self.document = None
         self.node_ns = None
+        self.debug = _debug
 
 
     def __str__(self):
@@ -70,8 +71,9 @@ class SignableDocument(object):
         doc_str = self.tostring(pretty_print=True)
         xml_fp.write(doc_str)
         xml_fp.flush()
-        print "XML:"
-        print doc_str
+        if self.debug:
+            print "XML:"
+            print doc_str
         xml_fp.seek(0)
         
 
@@ -103,8 +105,9 @@ class SignableDocument(object):
                 '--id-attr:ID',
                 _node_ns,
                 xml_fp.name]
-            
-            print "COMMANDS", cmds
+
+            if self.debug:
+                print "COMMANDS", cmds
             proc = subprocess.Popen(
                 cmds,
                 stderr=subprocess.PIPE,

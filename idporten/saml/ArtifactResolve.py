@@ -16,20 +16,21 @@ from SignableDocument import SignableDocument
 class ArtifactResolve(SignableDocument):
     """Creates an SAML2 ArtifactResolve message."""
 
-    def __init__(self, artifact, _clock=None, _uuid=None, **kwargs):
+    def __init__(self, artifact, _clock=None, _uuid=None, _debug=False,
+        **kwargs):
         """This should produce an SAML2 ArtifactResolve like this:
 
         <?xml version="1.0" encoding="UTF-8"?>
         <samlp:ArtifactResolve xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-            ID="%s"
-            IssueInstant="%s"
+            ID="<some-id>"
+            IssueInstant="<some-time>"
             Version="2.0">
-        <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">%s</saml:Issuer>
+        <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"><some-issuer></saml:Issuer>
         <ns1:Signature xmlns:ns1="http://www.w3.org/2000/09/xmldsig#">
             <ns1:SignedInfo>
                 <ns1:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
                 <ns1:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
-                <ns1:Reference URI="#%s">
+                <ns1:Reference URI="#<some-id>">
                     <ns1:Transforms>
                         <ns1:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
                         <ns1:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
@@ -43,9 +44,9 @@ class ArtifactResolve(SignableDocument):
                 <ns1:X509Data />
             </ns1:KeyInfo>
         </ns1:Signature>
-        <samlp:Artifact>%s</samlp:Artifact>
+        <samlp:Artifact><some-artifact-string></samlp:Artifact>
         </samlp:ArtifactResolve>"""
-        super(ArtifactResolve, self).__init__()
+        super(ArtifactResolve, self).__init__(_debug)
         self.node_ns = 'urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve'
 
         if _clock is None:

@@ -4,6 +4,7 @@ import sys
 import re
 from ArtifactResolve import ArtifactResolve
 from SOAPEnvelope import SOAPEnvelope
+from HTTPSOpen import HTTPSOpen
 
 
 XML_DECL_RE = '^<\?xml\ +version=.+encoding=.+\?>'
@@ -29,7 +30,11 @@ def main(*args):
 
     soap_envelope = SOAPEnvelope()
     soap_message = (unicode(soap_envelope) % signed_artifact)
+
     print soap_message
+    # Usage:
+    # https_open = HTTPSOpen('<some-url>', soap_message, _debug=True)
+    # resp = https_open.communicate()
 
 
 if __name__ == '__main__':
