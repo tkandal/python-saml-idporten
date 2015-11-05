@@ -1,9 +1,10 @@
-"""
-Creates an SAML2 ArtifactResolve message.
-"""
+# -*- coding: utf-8 -*-
 #
 # Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
 #
+"""
+Creates an SAML2 ArtifactResolve message.
+"""
 import uuid
 
 from datetime import datetime
@@ -18,6 +19,7 @@ class ArtifactResolve(SignableDocument):
     def __init__(self, artifact, _clock=None, _uuid=None, **kwargs):
         """This should produce an SAML2 ArtifactResolve like this:
 
+        <?xml version="1.0" encoding="UTF-8"?>
         <samlp:ArtifactResolve xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
             ID="%s"
             IssueInstant="%s"
@@ -96,9 +98,7 @@ class ArtifactResolve(SignableDocument):
 
         signature_elem = signature_maker.Signature()
 
- 
         signed_info_elem = signature_maker.SignedInfo()
-       
         signature_elem.append(signed_info_elem)
 
         signed_info_elem.append(signature_maker.CanonicalizationMethod(

@@ -1,18 +1,13 @@
-"""
-Creates a SOAP-Envelope.
-"""
+# -*- coding: utf-8 -*-
 #
 # Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
 #
-import re
+"""
+Creates a SOAP-Envelope.
+"""
 
 from lxml import etree
 from lxml.builder import ElementMaker
-
-
-
-XML_DECL = re.compile('^<\?xml\ +version=.+encoding=.+\?>$',
-    re.IGNORECASE|re.MULTILINE)
 
 
 class SOAPEnvelopeError(Exception):
@@ -42,39 +37,19 @@ class SOAPEnvelope(object):
         soap_envelope = soap_envelope_maker.Envelope()
         soap_body = soap_envelope_maker.Body()
         
-        soap_body.text = '\n%s'
+        soap_body.text = '%s'
         soap_envelope.append(soap_body)
         self.envelope = soap_envelope
 
 
     def __str__(self):
         """String-representation of this object."""
-        return etree.tostring(self.envelope, xml_delaration=True,
+        return etree.tostring(self.envelope, xml_declaration=True,
             pretty_print=True)
 
 
     def __unicode__(self):
         """Unicode-representation of this object."""
-        return etree.tostring(self.envelope, xml_delaration=True,
+        return etree.tostring(self.envelope, xml_declaration=True,
             encoding='UTF-8', pretty_print=True)
-
-
-    def tostring(self, body, xml_declaration=True, encoding='UTF-8',
-            pretty_print=False):
-        """Insert body as the SOAP-body and return this envelope as
-        a string.
-
-        Raise SOAPEnvelopeError if the body-parameter is not a string
-        or unicode."""
-        if isinstance(body, str) or isinstance(body, unicode):
-            # Get rid of the XML-declaration if it exists.
-            if XML_DECL.match(body):
-                splitted_body = body.split('\n')
-                body = '\n'.join(splitted_body[1:])
-            return (etree.tostring(self.envelope,
-                xml_declaration=xml_declaration, pretty_print=pretty_print,
-                encoding=encoding) % body)
-        else:
-            raise SOAPEnvelopeError('Illegal parameter.  Must be a '
-                'string or unicode')
 

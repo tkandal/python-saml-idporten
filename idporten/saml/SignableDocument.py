@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
+#
 """
 A base class for signing XML-documents.  Other classes that create
 XML-documents should sub-class this class if they need to be signed.
 """
-#
-# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
-#
 import subprocess
 import platform
 import tempfile
