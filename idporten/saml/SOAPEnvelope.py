@@ -25,7 +25,16 @@ class SOAPEnvelopeError(Exception):
 
 
 class SOAPEnvelope(object):
-    """Creates a SOAP-envelope with a string-placeholder as body."""
+    """Creates a SOAP-envelope with a string-placeholder as body,
+    like this:
+
+    <?xml version='1.0' encoding='UTF-8'?>
+    <soapp:Envelope xmlns:soapp="http://schemas.xmlsoap.org/soap/envelope/">
+        <soapp:Body>
+        %s
+        </soapp:Body>
+    </soapp:Envelope>
+    """
     def __init__(self):
         """Creates a SOAP-envelope."""
         super(SOAPEnvelope, self).__init__()

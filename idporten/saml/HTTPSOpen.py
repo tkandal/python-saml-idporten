@@ -14,7 +14,7 @@ class HTTPSOpen(object):
     "A class that communicates over HTTPS-connection."
 
     def __init__(self, location_url, send_data, _method='POST', _timeout=30,
-        _debug=False):
+        _content_type='text/xml; charset=UTF-8', _debug=False):
         """  """
         super(HTTPSOpen, self).__init__()
         parsed_location = urlparse.urlparse(location_url)
@@ -25,6 +25,7 @@ class HTTPSOpen(object):
         self.send_data = send_data
         self.method = _method
         self.timeout = _timeout
+        self.content_type = _content_type
         self.debug_conn = _debug
 
 
@@ -43,7 +44,7 @@ class HTTPSOpen(object):
         conn.request(self.method, self.location_path, body=self.send_data,
             headers={
                 "Host": self.location_host,
-                "Content-Type": "text/xml; charset=UTF-8",
+                "Content-Type": self.content_type,
                 "Content-Length": len(self.send_data)
                 }
             )
