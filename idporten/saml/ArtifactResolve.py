@@ -16,9 +16,20 @@ from SignableDocument import SignableDocument
 class ArtifactResolve(SignableDocument):
     """Creates an SAML2 ArtifactResolve message."""
 
-    def __init__(self, artifact, _clock=None, _uuid=None, _debug=False,
-        **kwargs):
-        """This should produce an SAML2 ArtifactResolve like this:
+    def __init__(self, artifact, _etree=None, _clock=None, _uuid=None,
+        _debug=False, **kwargs):
+        """A class that a SAML2 Artifactresolve-document.
+
+        Keywords argument:
+        artifact -- The artifact-string recieved from the IDP.
+        _etree -- Override the default etree-object (default None).
+        _clock -- Override the default datetime-object (default None).
+        _uuid -- Override the defualt uuid-generator (default None).
+        _debug -- Print debug (default False).
+
+
+        This class should produce an SAML2 ArtifactResolve protocol-
+        message like this:
 
         <?xml version="1.0" encoding="UTF-8"?>
         <samlp:ArtifactResolve xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -46,7 +57,7 @@ class ArtifactResolve(SignableDocument):
         </ns1:Signature>
         <samlp:Artifact><some-artifact-string></samlp:Artifact>
         </samlp:ArtifactResolve>"""
-        super(ArtifactResolve, self).__init__(_debug)
+        super(ArtifactResolve, self).__init__(_etree, _debug)
         self.node_ns = 'urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve'
 
         if _clock is None:

@@ -33,8 +33,9 @@ def main(*args):
 
     print soap_message
     # Usage:
-    # https_open = HTTPSOpen('<some-url>', soap_message, _debug=True)
+    # https_open = HTTPSOpen('https://www.ntnu.no', soap_message)
     # resp = https_open.communicate()
+    # print resp
 
 
 if __name__ == '__main__':

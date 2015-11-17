@@ -28,25 +28,33 @@ class SignableDocumentError(Exception):
 
 
 class SignableDocument(object):
-    """A base class for signing XML-documents"""
+    """A base class for signing XML-documents.  The purpose of this
+    class is to act as a super-class for classes that need xml-signature(s)."""
 
-    def __init__(self, _debug=False):
-        """Turn on _debug to see what is going on in the background."""
+    def __init__(self, _etree=None, _debug=False):
+        """More or less an empty constructor.
+
+        Keywords arguments:
+        _etree - Override the default etree-object (default None).
+        _debug -- Print debug-messages (default False).
+        """
         super(SignableDocument, self).__init__()
         self.document = None
         self.node_ns = None
         self.debug = _debug
+        if _etree is None:
+            self._etree = etree
 
 
     def __str__(self):
         """String-representation of this document."""
-        return etree.tostring(self.document, xml_declaration=True,
+        return self._etree.tostring(self.document, xml_declaration=True,
             pretty_print=True)
 
 
     def __unicode__(self):
-        """Unicode-representation of this document."""
-        return etree.tostring(self.document, xml_declaration=True,
+        """Unicode-string of this document."""
+        return self._etree.tostring(self.document, xml_declaration=True,
             encoding='UTF-8', pretty_print=True)
 
 
@@ -61,13 +69,24 @@ class SignableDocument(object):
 
     def tostring(self, xml_declaration=True, encoding='UTF-8',
         pretty_print=False):
-        """Return the XML-document as a string."""
-        return etree.tostring(self.document, xml_declaration=xml_declaration,
-            encoding=encoding, pretty_print=pretty_print)
+        """Return the XML-document as a string.
+
+        Keywords arguments:
+        xml_declaration -- Include xml-declartion as first line (default True).
+        encoding -- Charset to use for teh returned string (default UTF-8),
+        pretty_print -- Include linebreaks and intendation (default False).
+        """
+        return self._etree.tostring(self.document,
+            xml_declaration=xml_declaration, encoding=encoding,
+            pretty_print=pretty_print)
 
 
     def write_xml_to_file(self, xml_fp):
-        """Write the XML-document to a given file."""
+        """Write the XML-document to a given file.
+
+        Keywords arguments:
+        xml_fp -- An open filehandle.
+        """
         doc_str = self.tostring(pretty_print=True)
         xml_fp.write(doc_str)
         xml_fp.flush()
@@ -78,13 +97,18 @@ class SignableDocument(object):
         
 
     def sign_document(self, priv_key_file, ca_cert_file, _node_ns=None,
-        _etree=None, _tempfile=None, _subprocess=None):
+        _tempfile=None, _subprocess=None):
         """Sign the XML-document and return the signed document
         as a string.
 
+        Keyword arguments:
+        priv_key_file -- File containing the private key to use for signing.
+        ca_cert_file -- File containing the CA-certificate.
+        _node_ns -- The XML-node where the signing should start.
+        _tempfile -- Override the default tempfile-object (default None).
+        _subprocess -- Overrride the default subprocess-object (default None).
+
         Raises SignableDocumentError if an error occurs."""
-        if _etree is None:
-            _etree = etree
         if _tempfile is None:
             _tempfile = tempfile
         if _subprocess is None:
@@ -102,9 +126,12 @@ class SignableDocument(object):
                 '--sign',
                 '--privkey-pem',
                 priv_key_file + ',' + ca_cert_file,
-                '--id-attr:ID',
-                _node_ns,
-                xml_fp.name]
+                '--id-attr:ID']
+
+            if _node_ns:
+                cmds.append(_node_ns)
+
+            cmds.append(xml_fp.name)
 
             if self.debug:
                 print "COMMANDS", cmds

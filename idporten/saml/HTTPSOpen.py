@@ -11,11 +11,27 @@ import urlparse
 
 
 class HTTPSOpen(object):
-    "A class that communicates over HTTPS-connection."
+    """A class that communicates over HTTPS-connection.  The purpose of
+    this class is to post data to a given location (URL).  The default
+    behaviour is configured to post a SOAP-Envelope.
+    """
 
     def __init__(self, location_url, send_data, _method='POST', _timeout=30,
         _content_type='text/xml; charset=UTF-8', _debug=False):
-        """  """
+        """
+        Post data to a given location (URL).
+
+        Keyword arguments:
+        location_url -- The location (URL) to post the data.
+        send_data -- The data to post, and the data need to be
+                     urlencoded if it is required and the _content_type-
+                     parameter must be set accordingly.
+        _method -- Default post.
+        _timeout -- The connect-timeout (default 30 secs).
+        _content_type -- The content-type of the data
+                         (default text/xml; charset UTF-8).
+        _debug -- Print debug (default False).
+        """
         super(HTTPSOpen, self).__init__()
         parsed_location = urlparse.urlparse(location_url)
 
@@ -30,7 +46,7 @@ class HTTPSOpen(object):
 
 
     def communicate(self):
-        """Connect to the url, send request and get response."""
+        """Connect to the URL, send request and return the raw response."""
         if self.debug_conn:
             print 'Connection parameters:'
             print ('location_address = %s, location_path = %s, send_data = %s,'
