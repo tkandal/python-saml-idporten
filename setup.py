@@ -40,9 +40,11 @@ tests_require = [
         'nose >= 0.10.4',
         ]
 
+print find_packages()
+
 setup(
     name='idporten.saml',
-    version='0.0.1',
+    version='0.0.2',
     description="Python client library for ID-porten SAML Version 2.0",
     packages = find_packages(),
     namespace_packages = ['idporten'],
@@ -53,7 +55,7 @@ setup(
     cmdclass={
         'example': ExampleCommand
         },
-    author='Kristian Bendiksen',
-    author_email='kristian.bendiksen@gmail.com',
-    url='https://github.com/Trondheim-kommune/python-saml-idporten/',
+    author='Kristian Bendiksen, Trond Kandal',
+    author_email='kristian.bendiksen@gmail.com, Trond.Kandal@ntnu.no',
+    url='https://git.it.ntnu.no/projects/BAS/repos/python-saml-idporten/browse',
     )
