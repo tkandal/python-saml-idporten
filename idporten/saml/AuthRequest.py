@@ -11,7 +11,7 @@ from lxml.builder import ElementMaker
 
 from SignableRequest import SignableRequest
 
-LEGAL_BINDINGS = ['HTTP_POST', 'HTTP-Artifact']
+LEGAL_BINDINGS = ['HTTP-POST', 'HTTP-Artifact']
 
 class AuthRequest(SignableRequest):
     def __init__(self,
@@ -26,7 +26,7 @@ class AuthRequest(SignableRequest):
         issuer -- The name of your application. Some identity providers might need this to establish the identity of the service provider requesting the login.
         name_identifier_format -- The format of the username required by this application. If you need the email address, use "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress". See http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf section 8.3 for other options. Note that the identity provider might not support all options.
         idp_sso_target_url -- The URL to which the authentication request should be sent. This would be on the identity
-        assertion_binding -- The assertion-bind type, possible values HTTP_POST or HTTP-Artifact, default HTTP-Artifact.
+        sp_assertion_binding -- The assertion-bind type, possible values HTTP_POST or HTTP-Artifact, default HTTP-Artifact.
         """
         if _clock is None:
             _clock = datetime.utcnow
@@ -38,11 +38,11 @@ class AuthRequest(SignableRequest):
         name_identifier_format = kwargs.pop('name_identifier_format')
         self.target_url = kwargs.pop('idp_sso_target_url')
         # Introduced when ID-porten stopped using HTTP-POST.
-        assertion_binding = kwargs.pop('assertion_binding')
+        assertion_binding = kwargs.get('sp_assertion_binding', '')
 
         if assertion_binding is None or len(assertion_binding.strip()) == 0:
             assertion_binding = 'HTTP-Artifact'
-        if not assert_binding in LEGAL_BINDINGS:
+        if not assertion_binding in LEGAL_BINDINGS:
             raise Exception('Illegal binding')
 
         now = _clock()

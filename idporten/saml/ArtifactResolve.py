@@ -26,7 +26,7 @@ class ArtifactResolve(SignableDocument):
         _clock -- Override the default datetime-object (default None).
         _uuid -- Override the defualt uuid-generator (default None).
         _debug -- Print debug (default False).
-
+        issuer -- The name of your application.
 
         This class should produce an SAML2 ArtifactResolve protocol-
         message like this:
@@ -57,7 +57,7 @@ class ArtifactResolve(SignableDocument):
         </ns1:Signature>
         <samlp:Artifact><some-artifact-string></samlp:Artifact>
         </samlp:ArtifactResolve>"""
-        super(ArtifactResolve, self).__init__(_etree, _debug)
+        super(ArtifactResolve, self).__init__(_etree=_etree, _debug=_debug)
         self.node_ns = 'urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve'
 
         if _clock is None:
@@ -71,6 +71,7 @@ class ArtifactResolve(SignableDocument):
 
         unique_id = _uuid()
         unique_id = unique_id.hex
+        issuer = kwargs.pop('issuer')
 
         samlp_maker = ElementMaker(
             namespace='urn:oasis:names:tc:SAML:2.0:protocol',
@@ -86,12 +87,13 @@ class ArtifactResolve(SignableDocument):
             ID=unique_id,
             )
 
-        artifact_resolve.append(self._create_signature(unique_id))
+
+        saml_issuer = saml_maker.Issuer()
+        saml_issuer.text = issuer
+        artifact_resolve.append(saml_issuer)
 
         # Add Issuer and artifact under signature.
-        saml_issuer = saml_maker.Issuer()
-        saml_issuer.text = kwargs.get('issuer', '')
-        artifact_resolve.append(saml_issuer)
+        artifact_resolve.append(self._create_signature(unique_id))
 
         saml_artifact = samlp_maker.Artifact()
         saml_artifact.text = artifact
