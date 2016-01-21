@@ -37,6 +37,7 @@ class AuthRequest(SignableRequest):
         issuer = kwargs.pop('issuer')
         name_identifier_format = kwargs.pop('name_identifier_format')
         self.target_url = kwargs.pop('idp_sso_target_url')
+        # Introduced when ID-porten stopped using HTTP-POST.
         assertion_binding = kwargs.pop('assertion_binding')
 
         if assertion_binding is None or len(assertion_binding.strip()) == 0:
