@@ -8,6 +8,7 @@ A class that communicates over HTTPS-connection.
 
 import httplib
 import urlparse
+import ssl
 
 
 class HTTPSOpen(object):
@@ -17,7 +18,7 @@ class HTTPSOpen(object):
     """
 
     def __init__(self, location_url, send_data, _method='POST', _timeout=30,
-        _content_type='text/xml; charset=UTF-8', _debug=False):
+        _content_type='text/soap+xml; charset=UTF-8', _debug=False):
         """
         Post data to a given location (URL).
 
@@ -35,9 +36,16 @@ class HTTPSOpen(object):
         super(HTTPSOpen, self).__init__()
         parsed_location = urlparse.urlparse(location_url)
 
-        self.location_address = parsed_location.netloc
+        host_and_port = parsed_location.netloc.split(':')
+        self.location_host = None
+        self.location_port = None
+        if len(host_and_port) == 2:
+            self.location_host = host_and_port[0]
+            self.location_port = int(host_and_port[1])
+        else:
+            self.location_host = host_and_port[0]
+            self.location_port = httplib.HTTPS_PORT
         self.location_path = parsed_location.path
-        self.location_host = self.location_address.split(':')[0]
         self.send_data = send_data
         self.method = _method
         self.timeout = _timeout
@@ -49,21 +57,21 @@ class HTTPSOpen(object):
         """Connect to the URL, send request and return the raw response."""
         if self.debug_conn:
             print 'Connection parameters:'
-            print ('location_address = %s, location_path = %s, send_data = %s,'
-                ' location_host = %s, method = %s' % (self.location_address,
-                self.location_path, self.send_data, self.location_host,
-                self.method))
+            print ('location_host = %s, location_port = %d, '
+                   'location_path = %s, method = %s, send_data = %s' %
+                (self.location_host, self.location_port, self.location_path,
+                self.method, self.send_data))
 
-        conn = httplib.HTTPSConnection(self.location_address,
-                timeout=self.timeout)
+        conn = httplib.HTTPSConnection(self.location_host,
+                                        port=self.location_port,
+                                        timeout=self.timeout)
 
-        conn.request(self.method, self.location_path, body=self.send_data,
-            headers={
-                "Host": self.location_host,
-                "Content-Type": self.content_type,
-                "Content-Length": len(self.send_data)
-                }
-            )
+        headers = {
+            "Host": self.location_host,
+            "Content-Type": self.content_type,
+            }
+        conn.request(self.method, self.location_path, self.send_data, headers)
+
         conn_resp = None
         http_response = conn.getresponse()
         if http_response.status != httplib.OK:
