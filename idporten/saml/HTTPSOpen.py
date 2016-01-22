@@ -46,10 +46,10 @@ class HTTPSOpen(object):
             self.location_host = host_and_port[0]
             self.location_port = httplib.HTTPS_PORT
         self.location_path = parsed_location.path
-        self.send_data = send_data
         self.method = _method
-        self.timeout = _timeout
         self.content_type = _content_type
+        self.send_data = send_data
+        self.timeout = _timeout
         self.debug_conn = _debug
 
 
@@ -58,9 +58,10 @@ class HTTPSOpen(object):
         if self.debug_conn:
             print 'Connection parameters:'
             print ('location_host = %s, location_port = %d, '
-                   'location_path = %s, method = %s, send_data = %s' %
+                   'location_path = %s, method = %s, content_type = %s, '
+                   'timeout = %d, send_data:\n%s' %
                 (self.location_host, self.location_port, self.location_path,
-                self.method, self.send_data))
+                self.method, self.content_type, self.timeout, self.send_data))
 
         conn = httplib.HTTPSConnection(self.location_host,
                                         port=self.location_port,
@@ -69,6 +70,7 @@ class HTTPSOpen(object):
         headers = {
             "Host": self.location_host,
             "Content-Type": self.content_type,
+            "Content-Length": len(self.send_data),
             }
         conn.request(self.method, self.location_path, self.send_data, headers)
 
