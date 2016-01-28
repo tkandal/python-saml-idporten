@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+# vim:sw=4:ts=4:et:
 import sys
 import re
 from ArtifactResolve import ArtifactResolve
