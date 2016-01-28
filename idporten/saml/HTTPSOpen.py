@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vim:sw=4:ts=4:et:
 #
 # Copright(c) 2015 Norwegian University of Science and Technology
 #
@@ -46,6 +47,8 @@ class HTTPSOpen(object):
             self.location_host = host_and_port[0]
             self.location_port = httplib.HTTPS_PORT
         self.location_path = parsed_location.path
+        if self.location_path is None or len(self.location_path) == 0:
+            self.location_path = '/'
         self.method = _method
         self.content_type = _content_type
         self.send_data = send_data
@@ -72,6 +75,8 @@ class HTTPSOpen(object):
             "Content-Type": self.content_type,
             "Content-Length": len(self.send_data),
             }
+        if self.debug_conn:
+            print ('Headers:\n%s' % str(headers))
         conn.request(self.method, self.location_path, self.send_data, headers)
 
         conn_resp = None

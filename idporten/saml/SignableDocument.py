@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vim:sw=4:ts=4:et:
 #
 # Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
 #
