@@ -19,9 +19,11 @@ class HTTPSOpen(object):
     """
 
     def __init__(self, location_url, send_data, _method='POST', _timeout=30,
-        _content_type='text/soap+xml; charset=UTF-8', _debug=False):
+        _content_type='text/xml; charset=UTF-8', _debug=False):
         """
-        Post data to a given location (URL).
+        Open a https connection to an URL.  The URL can specify port on
+        the format https://hostname:port/...; if no port is specified
+        the default https-port will be used.
 
         Keyword arguments:
         location_url -- The location (URL) to post the data.
@@ -57,7 +59,9 @@ class HTTPSOpen(object):
 
 
     def communicate(self):
-        """Connect to the URL, send request and return the raw response."""
+        """
+        Connect to the URL, send request and return the raw response.
+        """
         if self.debug_conn:
             print 'Connection parameters:'
             print ('location_host = %s, location_port = %d, '
@@ -67,8 +71,8 @@ class HTTPSOpen(object):
                 self.method, self.content_type, self.timeout, self.send_data))
 
         conn = httplib.HTTPSConnection(self.location_host,
-                                        port=self.location_port,
-                                        timeout=self.timeout)
+                                       port=self.location_port,
+                                       timeout=self.timeout)
 
         headers = {
             "Host": self.location_host,
@@ -77,7 +81,8 @@ class HTTPSOpen(object):
             }
         if self.debug_conn:
             print ('Headers:\n%s' % str(headers))
-        conn.request(self.method, self.location_path, self.send_data, headers)
+        conn.request(self.method, self.location_path, body=self.send_data,
+                     headers=headers)
 
         conn_resp = None
         http_response = conn.getresponse()
