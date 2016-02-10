@@ -23,11 +23,12 @@ class SignatureVerifier(object):
         self.idp_cert_filename = idp_cert_filename
         self.private_key_file = private_key_file
 
-    def verify_and_decrypt(self, document, signature):
+    def verify_and_decrypt(self, document, signature, _node_ns=None):
         return self.verify(document,
                            signature,
                            self.idp_cert_filename,
-                           self.private_key_file)
+                           self.private_key_file,
+                            _node_ns=_node_ns)
 
     @staticmethod
     def _get_xmlsec_bin():
@@ -44,6 +45,7 @@ class SignatureVerifier(object):
         signature,
         idp_cert_filename,
         private_key_file,
+        _node_ns=None,
         _etree=None,
         _tempfile=None,
         _subprocess=None,
@@ -72,7 +74,7 @@ class SignatureVerifier(object):
         with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
             self.write_xml_to_file(document, xml_fp)
 
-            verified = self.verify_xml(xml_fp.name, xmlsec_bin, idp_cert_filename)
+            verified = self.verify_xml(xml_fp.name, xmlsec_bin, idp_cert_filename, _node_ns=_node_ns)
             if verified:
                 decrypted = self.decrypt_xml(xml_fp.name, xmlsec_bin, private_key_file)
 
@@ -104,7 +106,7 @@ class SignatureVerifier(object):
             )
 
     @staticmethod
-    def verify_xml(xml_filename, xmlsec_bin, idp_cert_filename):
+    def verify_xml(xml_filename, xmlsec_bin, idp_cert_filename, _node_ns=None):
         # We cannot use xmlsec python bindings to verify here because
         # that would require a call to libxml2.xmlAddID. The libxml2 python
         # bindings do not yet provide this function.
@@ -114,10 +116,12 @@ class SignatureVerifier(object):
             '--verify',
             '--pubkey-cert-pem',
             idp_cert_filename,
-            '--id-attr',
-            'ID',
-            xml_filename,
+            '--id-attr:ID',
             ]
+        if _node_ns:
+            cmds.append(_node_ns)
+
+        cmds.append(xml_filename)
 
         print "COMMANDS", cmds
         proc = subprocess.Popen(

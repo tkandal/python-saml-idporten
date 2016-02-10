@@ -58,8 +58,9 @@ class ArtifactResolve(SignableDocument):
         </ns1:Signature>
         <samlp:Artifact><some-artifact-string></samlp:Artifact>
         </samlp:ArtifactResolve>"""
-        super(ArtifactResolve, self).__init__(_etree=_etree, _debug=_debug)
-        self.node_ns = 'urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve'
+        super(ArtifactResolve, self).__init__(
+            _node_ns='urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve',
+            _etree=_etree, _debug=_debug)
 
         if _clock is None:
             _clock = datetime.utcnow

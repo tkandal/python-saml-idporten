@@ -32,16 +32,17 @@ class SignableDocument(object):
     """A base class for signing XML-documents.  The purpose of this
     class is to act as a super-class for classes that need xml-signature(s)."""
 
-    def __init__(self, _etree=None, _debug=False):
+    def __init__(self, _node_ns=None, _etree=None, _debug=False):
         """More or less an empty constructor.
 
         Keywords arguments:
-        _etree - Override the default etree-object (default None).
+        _node_ns -- Namespace for the element to be signed (default None).
+        _etree -- Override the default etree-object (default None).
         _debug -- Print debug-messages (default False).
         """
         super(SignableDocument, self).__init__()
         self.document = None
-        self.node_ns = None
+        self.node_ns = _node_ns
         self.debug = _debug
         if _etree is None:
             self._etree = etree
@@ -97,7 +98,7 @@ class SignableDocument(object):
         xml_fp.seek(0)
         
 
-    def sign_document(self, priv_key_file, ca_cert_file, _node_ns=None,
+    def sign_document(self, priv_key_file, _node_ns=None,
         _tempfile=None, _subprocess=None):
         """Sign the XML-document and return the signed document
         as a string.
@@ -126,7 +127,7 @@ class SignableDocument(object):
             cmds = [xmlsec_bin,
                 '--sign',
                 '--privkey-pem',
-                priv_key_file + ',' + ca_cert_file,
+                priv_key_file,
                 '--id-attr:ID']
 
             if _node_ns:
