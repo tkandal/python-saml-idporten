@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import os
 import subprocess
 import platform
@@ -7,6 +9,7 @@ import logging
 from lxml import etree
 
 log = logging.getLogger(__name__)
+
 
 class SignatureVerifierError(Exception):
     """There was a problem validating the response"""
@@ -23,12 +26,13 @@ class SignatureVerifier(object):
         self.idp_cert_filename = idp_cert_filename
         self.private_key_file = private_key_file
 
-    def verify_and_decrypt(self, document, signature, _node_ns=None):
+    def verify_and_decrypt(self, document, signature, _node_name=None):
         return self.verify(document,
                            signature,
                            self.idp_cert_filename,
                            self.private_key_file,
-                            _node_ns=_node_ns)
+                            _node_name=_node_name)
+
 
     @staticmethod
     def _get_xmlsec_bin():
@@ -45,7 +49,7 @@ class SignatureVerifier(object):
         signature,
         idp_cert_filename,
         private_key_file,
-        _node_ns=None,
+        _node_name=None,
         _etree=None,
         _tempfile=None,
         _subprocess=None,
@@ -74,11 +78,14 @@ class SignatureVerifier(object):
         with _tempfile.NamedTemporaryFile(delete=False) as xml_fp:
             self.write_xml_to_file(document, xml_fp)
 
-            verified = self.verify_xml(xml_fp.name, xmlsec_bin, idp_cert_filename, _node_ns=_node_ns)
+            verified = self.verify_xml(xml_fp.name, xmlsec_bin,
+                idp_cert_filename, _node_name=_node_name)
             if verified:
-                decrypted = self.decrypt_xml(xml_fp.name, xmlsec_bin, private_key_file)
+                decrypted = self.decrypt_xml(xml_fp.name, xmlsec_bin,
+                    private_key_file)
 
         return verified, decrypted
+
 
     @staticmethod
     def _parse_stderr(proc):
@@ -102,11 +109,13 @@ class SignatureVerifier(object):
 
         # Should not happen
         raise SignatureVerifierError(
-            'XMLSec exited with code 0 but did not return OK when verifying the SAML response.'
-            )
+            ('XMLSec exited with code 0 but did not return OK when verifying '
+            'the SAML response.'))
+
 
     @staticmethod
-    def verify_xml(xml_filename, xmlsec_bin, idp_cert_filename, _node_ns=None):
+    def verify_xml(xml_filename, xmlsec_bin, idp_cert_filename,
+        _node_name=None):
         # We cannot use xmlsec python bindings to verify here because
         # that would require a call to libxml2.xmlAddID. The libxml2 python
         # bindings do not yet provide this function.
@@ -118,12 +127,12 @@ class SignatureVerifier(object):
             idp_cert_filename,
             '--id-attr:ID',
             ]
-        if _node_ns:
-            cmds.append(_node_ns)
+        if _node_name:
+            cmds.append(_node_name)
 
         cmds.append(xml_filename)
 
-        print "COMMANDS", cmds
+        # print "COMMANDS", cmds
         proc = subprocess.Popen(
             cmds,
             stderr=subprocess.PIPE,
@@ -143,7 +152,7 @@ class SignatureVerifier(object):
             xml_filename
             ]
 
-        print "COMMANDS", cmds
+        # print "COMMANDS", cmds
         proc = subprocess.Popen(
             cmds,
             stderr=subprocess.PIPE,
@@ -152,12 +161,15 @@ class SignatureVerifier(object):
         out, err = proc.communicate()
         return out
 
+
     @staticmethod
     def write_xml_to_file(document, xml_fp):
         doc_str = etree.tostring(document)
         xml_fp.write('<?xml version="1.0" encoding="utf-8"?>')
-        xml_fp.write("<!DOCTYPE test [<!ATTLIST samlp:Response ID ID #IMPLIED>]>")
+        xml_fp.write(
+            "<!DOCTYPE test [<!ATTLIST samlp:Response ID ID #IMPLIED>]>")
         xml_fp.write(doc_str)
-        print "XML:"
-        print doc_str
+        # print "XML:"
+        # print doc_str
         xml_fp.seek(0)
+

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# vim:sw=4:ts=4:et:
+# vim: et:ts=4:sw=4:sts=4
 #
-# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
+# Copyright(c) 2016 Norwegian Univeristy of Science and Technology.
 #
 """
 A base class for signing XML-documents.  Other classes that create
@@ -32,17 +32,17 @@ class SignableDocument(object):
     """A base class for signing XML-documents.  The purpose of this
     class is to act as a super-class for classes that need xml-signature(s)."""
 
-    def __init__(self, _node_ns=None, _etree=None, _debug=False):
+    def __init__(self, _node_name=None, _etree=None, _debug=False):
         """More or less an empty constructor.
 
         Keywords arguments:
-        _node_ns -- Namespace for the element to be signed (default None).
+        _node_name -- Element to start the signing (default None).
         _etree -- Override the default etree-object (default None).
         _debug -- Print debug-messages (default False).
         """
         super(SignableDocument, self).__init__()
         self.document = None
-        self.node_ns = _node_ns
+        self.node_name = _node_name
         self.debug = _debug
         if _etree is None:
             self._etree = etree
@@ -98,7 +98,7 @@ class SignableDocument(object):
         xml_fp.seek(0)
         
 
-    def sign_document(self, priv_key_file, _node_ns=None,
+    def sign_document(self, priv_key_file, _node_name=None,
         _tempfile=None, _subprocess=None):
         """Sign the XML-document and return the signed document
         as a string.
@@ -106,7 +106,7 @@ class SignableDocument(object):
         Keyword arguments:
         priv_key_file -- File containing the private key to use for signing.
         ca_cert_file -- File containing the CA-certificate.
-        _node_ns -- The XML-node where the signing should start.
+        _node_name -- The XML-node where the signing should start.
         _tempfile -- Override the default tempfile-object (default None).
         _subprocess -- Overrride the default subprocess-object (default None).
 
@@ -115,8 +115,8 @@ class SignableDocument(object):
             _tempfile = tempfile
         if _subprocess is None:
             _subprocess = subprocess
-        if _node_ns is None:
-            _node_ns = self.node_ns
+        if _node_name is None:
+            _node_name = self.node_name
 
         signed_message = None
         with _tempfile.NamedTemporaryFile(suffix='.xml',
@@ -130,8 +130,8 @@ class SignableDocument(object):
                 priv_key_file,
                 '--id-attr:ID']
 
-            if _node_ns:
-                cmds.append(_node_ns)
+            if _node_name:
+                cmds.append(_node_name)
 
             cmds.append(xml_fp.name)
 

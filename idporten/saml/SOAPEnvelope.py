@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim:sw=4:ts=4:et:
 #
-# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
+# Copyright(c) 2016 Norwegian Univeristy of Science and Technology.
 #
 """
 Creates a SOAP-Envelope.

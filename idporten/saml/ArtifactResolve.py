@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# vim:sw=4:ts=4:et:
+# vim: et:ts=4:sw=4:sts=4
 #
-# Copyright(c) 2015 Norwegian Univeristy of Science and Technology.
+# Copyright(c) 2016 Norwegian Univeristy of Science and Technology.
 #
 """
 Creates an SAML2 ArtifactResolve message.
@@ -59,7 +59,7 @@ class ArtifactResolve(SignableDocument):
         <samlp:Artifact><some-artifact-string></samlp:Artifact>
         </samlp:ArtifactResolve>"""
         super(ArtifactResolve, self).__init__(
-            _node_ns='urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve',
+            _node_name='urn:oasis:names:tc:SAML:2.0:protocol:ArtifactResolve',
             _etree=_etree, _debug=_debug)
 
         if _clock is None:
@@ -89,7 +89,6 @@ class ArtifactResolve(SignableDocument):
             ID=unique_id,
             )
 
-
         saml_issuer = saml_maker.Issuer()
         saml_issuer.text = issuer
         artifact_resolve.append(saml_issuer)
@@ -106,7 +105,7 @@ class ArtifactResolve(SignableDocument):
 
     @staticmethod
     def _create_signature(unique_id):
-        """Craates all XML-elements needed for an XML-signature."""
+        """Creates all XML-elements needed for an XML-signature."""
         signature_maker = ElementMaker(
             namespace='http://www.w3.org/2000/09/xmldsig#',
             nsmap=dict(ns1='http://www.w3.org/2000/09/xmldsig#')

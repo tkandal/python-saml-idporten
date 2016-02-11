@@ -1,12 +1,8 @@
-import zlib
-import base64
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import uuid
-import urllib
-import tempfile
-import subprocess as subp
 
 from datetime import datetime
-from lxml import etree
 from lxml.builder import ElementMaker
 
 from SignableRequest import SignableRequest
@@ -28,12 +24,15 @@ class AuthRequest(SignableRequest):
         idp_sso_target_url -- The URL to which the authentication request should be sent. This would be on the identity
         sp_assertion_binding -- The assertion-bind type, possible values HTTP_POST or HTTP-Artifact, default HTTP-Artifact.
         """
+        super(AuthRequest, self).__init__()
         if _clock is None:
             _clock = datetime.utcnow
         if _uuid is None:
             _uuid = uuid.uuid4
 
-        assertion_consumer_service_url = kwargs.pop('assertion_consumer_service_url')
+        assertion_consumer_service_url = kwargs.pop(
+            'assertion_consumer_service_url')
+
         issuer = kwargs.pop('issuer')
         name_identifier_format = kwargs.pop('name_identifier_format')
         self.target_url = kwargs.pop('idp_sso_target_url')
@@ -65,7 +64,8 @@ class AuthRequest(SignableRequest):
             )
 
         authn_request = samlp_maker.AuthnRequest(
-            ProtocolBinding=('urn:oasis:names:tc:SAML:2.0:bindings:%s' % assertion_binding),
+            ProtocolBinding = ('urn:oasis:names:tc:SAML:2.0:bindings:%s' %
+                                assertion_binding),
             Version='2.0',
             IssueInstant=now_iso,
             ID=unique_id,
@@ -90,8 +90,9 @@ class AuthRequest(SignableRequest):
             )
         authn_request.append(request_authn_context)
         authn_context_class_ref = saml_maker.AuthnContextClassRef()
-        authn_context_class_ref.text = ('urn:oasis:names:tc:SAML:2.0:ac:classes:'
-                                        + 'PasswordProtectedTransport'
-                                        )
+        authn_context_class_ref.text = ('urn:oasis:names:tc:SAML:2.0:ac:'
+            'classes:PasswordProtectedTransport')
+
         request_authn_context.append(authn_context_class_ref)
         self.document = authn_request
+

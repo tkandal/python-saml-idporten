@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# vim:sw=4:ts=4:et:
+# vim: et:ts=4:sw=4:sts=4
+#
+# Copyright(c) 2016 Norwegian Univeristy of Science and Technology.
+#
 import sys
 import re
 from ArtifactResolve import ArtifactResolve

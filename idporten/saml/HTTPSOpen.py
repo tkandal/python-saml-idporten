@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# vim:sw=4:ts=4:et:
+# vim: et:ts=4:sw=4:sts=4
 #
-# Copright(c) 2015 Norwegian University of Science and Technology
+# Copright(c) 2016 Norwegian University of Science and Technology
 #
 """
 A class that communicates over HTTPS-connection.
@@ -9,7 +9,6 @@ A class that communicates over HTTPS-connection.
 
 import httplib
 import urlparse
-import ssl
 
 
 class HTTPSOpen(object):
@@ -96,3 +95,4 @@ class HTTPSOpen(object):
             print 'Response:'
             print conn_resp
         return conn_resp
+
