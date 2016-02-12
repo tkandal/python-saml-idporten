@@ -15,6 +15,8 @@ class HTTPSOpen(object):
     """A class that communicates over HTTPS-connection.  The purpose of
     this class is to post data to a given location (URL).  The default
     behaviour is configured to post a SOAP-Envelope.
+    The connection is regarded as failied if the returned HTTP-status
+    is different from 200.
     """
 
     def __init__(self, location_url, send_data, _method='POST', _timeout=30,
@@ -60,6 +62,8 @@ class HTTPSOpen(object):
     def communicate(self):
         """
         Connect to the URL, send request and return the raw response.
+        If the returned HTTP-status from the server is not equal to 200,
+        the connection is regarded as failed and this method will return None.
         """
         if self.debug_conn:
             print 'Connection parameters:'
@@ -85,10 +89,13 @@ class HTTPSOpen(object):
 
         conn_resp = None
         http_response = conn.getresponse()
-        if http_response.status != httplib.OK:
-            print ('HTTPS-connectiom failed; status = %d, reason = %s' %
+        if http_response.status >= httplib.MULTIPLE_CHOICES:
+            print ('HTTPS-connection failed; status = %d, reason = %s' %
                     (http_response.status, http_response.reason))
-        else:
+        elif http_response.status > httplib.OK:
+            print ('Unexpected status; status = %d, reason = %s' %
+                    (http_response.status, http_response.reason))
+        elif http_response.status == httplib.OK:
             conn_resp = http_response.read()
         conn.close()
         if self.debug_conn:
