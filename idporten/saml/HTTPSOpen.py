@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: et:ts=4:sw=4:sts=4
 #
-# Copright(c) 2016 Norwegian University of Science and Technology
+# Copyright(c) 2016 Norwegian University of Science and Technology
 #
 """
 A class that communicates over HTTPS-connection.
