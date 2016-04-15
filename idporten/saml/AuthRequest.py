@@ -1,16 +1,13 @@
-import zlib
-import base64
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import uuid
-import urllib
-import tempfile
-import subprocess as subp
 
 from datetime import datetime
-from lxml import etree
 from lxml.builder import ElementMaker
 
 from SignableRequest import SignableRequest
 
+LEGAL_BINDINGS = ['HTTP-POST', 'HTTP-Artifact']
 
 class AuthRequest(SignableRequest):
     def __init__(self,
@@ -25,17 +22,27 @@ class AuthRequest(SignableRequest):
         issuer -- The name of your application. Some identity providers might need this to establish the identity of the service provider requesting the login.
         name_identifier_format -- The format of the username required by this application. If you need the email address, use "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress". See http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf section 8.3 for other options. Note that the identity provider might not support all options.
         idp_sso_target_url -- The URL to which the authentication request should be sent. This would be on the identity
+        sp_assertion_binding -- The assertion-bind type, possible values HTTP_POST or HTTP-Artifact, default HTTP-Artifact.
         """
+        super(AuthRequest, self).__init__()
         if _clock is None:
             _clock = datetime.utcnow
         if _uuid is None:
             _uuid = uuid.uuid4
 
-        assertion_consumer_service_url = kwargs.pop('assertion_consumer_service_url')
+        assertion_consumer_service_url = kwargs.pop(
+            'assertion_consumer_service_url')
+
         issuer = kwargs.pop('issuer')
         name_identifier_format = kwargs.pop('name_identifier_format')
         self.target_url = kwargs.pop('idp_sso_target_url')
+        # Introduced when ID-porten stopped using HTTP-POST.
+        assertion_binding = kwargs.get('sp_assertion_binding', '')
 
+        if assertion_binding is None or len(assertion_binding.strip()) == 0:
+            assertion_binding = 'HTTP-Artifact'
+        if not assertion_binding in LEGAL_BINDINGS:
+            raise Exception('Illegal binding')
 
         now = _clock()
         # Resolution finer than milliseconds not allowed
@@ -57,7 +64,8 @@ class AuthRequest(SignableRequest):
             )
 
         authn_request = samlp_maker.AuthnRequest(
-            ProtocolBinding='urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+            ProtocolBinding = ('urn:oasis:names:tc:SAML:2.0:bindings:%s' %
+                                assertion_binding),
             Version='2.0',
             IssueInstant=now_iso,
             ID=unique_id,
@@ -82,8 +90,9 @@ class AuthRequest(SignableRequest):
             )
         authn_request.append(request_authn_context)
         authn_context_class_ref = saml_maker.AuthnContextClassRef()
-        authn_context_class_ref.text = ('urn:oasis:names:tc:SAML:2.0:ac:classes:'
-                                        + 'PasswordProtectedTransport'
-                                        )
+        authn_context_class_ref.text = ('urn:oasis:names:tc:SAML:2.0:ac:'
+            'classes:PasswordProtectedTransport')
+
         request_authn_context.append(authn_context_class_ref)
         self.document = authn_request
+

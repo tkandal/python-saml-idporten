@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import base64
 import zlib
 from lxml import etree
 
 
-namespaces=dict(
+namespaces = dict(
     samlp='urn:oasis:names:tc:SAML:2.0:protocol',
     saml='urn:oasis:names:tc:SAML:2.0:assertion',
     )
+
 
 class LogoutResponse(object):
     def __init__(self, response):
@@ -33,7 +36,10 @@ class LogoutResponse(object):
         - The document must have decoded, decompressed and parse correctly.
         - It must have StatusCode == Success.
         """
-        result = self.document.xpath('/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/@Value',
-                                     namespaces=namespaces)
+        result = self.document.xpath(
+            '/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/@Value',
+            namespaces=namespaces)
 
-        return len(result) == 1 and result[0] == "urn:oasis:names:tc:SAML:2.0:status:Success"
+        return (len(result) == 1 and
+                result[0] == "urn:oasis:names:tc:SAML:2.0:status:Success")
+

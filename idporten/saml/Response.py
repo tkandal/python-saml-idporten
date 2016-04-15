@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import base64
 
 from lxml import etree
@@ -5,10 +7,12 @@ from datetime import datetime, timedelta
 
 from SignatureVerifier import SignatureVerifier
 
-namespaces=dict(
+
+namespaces = dict(
     samlp='urn:oasis:names:tc:SAML:2.0:protocol',
     saml='urn:oasis:names:tc:SAML:2.0:assertion',
     )
+
 
 class ResponseValidationError(Exception):
     """There was a problem validating the response"""
@@ -53,17 +57,21 @@ class Response(object):
         if _etree is None:
             _etree = etree
 
+        self.decrypted = None
+        self._decrypted_document = None
         decoded_response = _base64.b64decode(response)
         self._document = _etree.fromstring(decoded_response)
         self._signature = signature
 
 
-    def _parse_datetime(self, dt):
-        return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
+    def _parse_datetime(self, date_time):
+        return datetime.strptime(date_time, '%Y-%m-%dT%H:%M:%SZ')
+
 
     def _get_name_id(self):
         result = self._decrypted_document.xpath(
-            '/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:Subject/saml:NameID',
+            ('/samlp:Response/saml:EncryptedAssertion/saml:Assertion'
+                '/saml:Subject/saml:NameID'),
             namespaces=namespaces,
             )
         length = len(result)
@@ -87,27 +95,35 @@ class Response(object):
 
     def get_session_index(self):
         result = self._decrypted_document.xpath(
-            '/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:AuthnStatement/@SessionIndex',
-            namespaces=namespaces,
-            )
+            ('/samlp:Response/saml:EncryptedAssertion/saml:Assertion'
+                '/saml:AuthnStatement/@SessionIndex'), namespaces=namespaces,)
 
         return result[0]
 
 
-
-
-    def get_assertion_attribute_value(self,attribute_name):
+    def get_assertion_attribute_value(self, attribute_name):
         """
-        Get the value of an AssertionAttribute, located in an Assertion/AttributeStatement/Attribute[@Name=attribute_name/AttributeValue tag
+        Get the value of an AssertionAttribute, located in an
+        Assertion/AttributeStatement/Attribute[@Name=attribute_name
+        /AttributeValue tag
         """
-        result = self._document.xpath('/samlp:Response/saml:Assertion/saml:AttributeStatement/saml:Attribute[@Name="%s"]/saml:AttributeValue'%attribute_name,namespaces=namespaces)
+        result = self._document.xpath(
+            ('/samlp:Response/saml:Assertion/saml:AttributeStatement'
+                '/saml:Attribute[@Name="%s"]/saml:AttributeValue' %
+                attribute_name), namespaces=namespaces)
         return [n.text.strip() for n in result]
 
-    def get_decrypted_assertion_attribute_value(self,attribute_name):
+
+    def get_decrypted_assertion_attribute_value(self, attribute_name):
         """
-        Get the value of an AssertionAttribute, located in an Assertion/AttributeStatement/Attribute[@Name=attribute_name/AttributeValue tag
+        Get the value of an AssertionAttribute, located in an
+        Assertion/AttributeStatement/Attribute[@Name=attribute_name
+        /AttributeValue tag
         """
-        result = self._decrypted_document.xpath('/samlp:Response/saml:EncryptedAssertion/saml:Assertion/saml:AttributeStatement/saml:Attribute[@Name="%s"]/saml:AttributeValue'%attribute_name,namespaces=namespaces)
+        result = self._decrypted_document.xpath(
+            ('/samlp:Response/saml:EncryptedAssertion/saml:Assertion'
+                '/saml:AttributeStatement/saml:Attribute[@Name="%s"]'
+                '/saml:AttributeValue' % attribute_name), namespaces=namespaces)
         return [n.text.strip() for n in result]
 
 
@@ -142,7 +158,7 @@ class Response(object):
 
         if not_before is None:
             #notbefore condition is not mandatory. If it is not specified, use yesterday as not_before condition
-            not_before = (now-timedelta(1,0,0)).strftime('%Y-%m-%dT%H:%M:%SZ')
+            not_before = (now-timedelta(1, 0, 0)).strftime('%Y-%m-%dT%H:%M:%SZ')
         #TODO: this is in the encrypted part in our case..
         #if not_on_or_after is None:
         #    raise ResponseConditionError('Did not find NotOnOrAfter condition')
@@ -164,3 +180,4 @@ class Response(object):
         self.decrypted = decrypted
         self._decrypted_document = etree.fromstring(self.decrypted)
         return is_valid
+

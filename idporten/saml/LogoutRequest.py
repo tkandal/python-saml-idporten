@@ -1,9 +1,6 @@
-import zlib
-import base64
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import uuid
-import urllib
-import tempfile
-import subprocess as subp
 
 from datetime import datetime
 from lxml import etree
@@ -25,6 +22,7 @@ class LogoutRequest(SignableRequest):
         name_identifier_format -- The format of the username required by this application. If you need the email address, use "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress". See http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf section 8.3 for other options. Note that the identity provider might not support all options.
         idp_sso_target_url -- The URL to which the authentication request should be sent. This would be on the identity
         """
+        super(LogoutRequest, self).__init__()
         if _clock is None:
             _clock = datetime.utcnow
         if _uuid is None:
@@ -77,3 +75,4 @@ class LogoutRequest(SignableRequest):
         self.raw_xml = etree.tostring(logout_request,
                                       xml_declaration=True,
                                       encoding='UTF-8')
+

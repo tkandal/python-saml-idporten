@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
+# vim: et:ts=4:sw=4:sts=4
 import zlib
 import base64
-import uuid
 import urllib
 import tempfile
 import subprocess as subp
 
-from datetime import datetime
 from lxml import etree
-from lxml.builder import ElementMaker
 
 
 def sign_request(urlencoded_request, private_key_file):
@@ -38,7 +37,9 @@ class SignableRequest(object):
         self.document = None
         self.target_url = None
 
-    def get_signed_url(self, private_key_file, _zlib=None, _base64=None, _urllib=None):
+
+    def get_signed_url(self, private_key_file, _zlib=None, _base64=None,
+        _urllib=None):
         if _zlib is None:
             _zlib = zlib
         if _base64 is None:
@@ -46,7 +47,8 @@ class SignableRequest(object):
         if _urllib is None:
             _urllib = urllib
 
-        authn_request_string = etree.tostring(self.document, xml_declaration=True, encoding='UTF-8')
+        authn_request_string = etree.tostring(self.document,
+            xml_declaration=True, encoding='UTF-8')
 
 
         compressed_request = _zlib.compress(authn_request_string)
@@ -65,3 +67,4 @@ class SignableRequest(object):
             query=urlencoded_request,
             Signature=signature
             )
+
