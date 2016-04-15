@@ -125,10 +125,9 @@ class SignatureVerifier(object):
             '--verify',
             '--pubkey-cert-pem',
             idp_cert_filename,
-            '--id-attr:ID',
             ]
         if _node_name:
-            cmds.append(_node_name)
+            cmds.extend(['--id-attr', _node_name])
 
         cmds.append(xml_filename)
 
